@@ -380,7 +380,7 @@ function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
     return {width=col+2 -startx , height=row+2 -starty}
 end
 
-function game_state(level)
+function game_state(level, score)
     local s={}
     camx = 0
     camy = 0
@@ -444,6 +444,7 @@ function game_state(level)
 
     -- spawn hero and parse the map
     s.hero = spawn_hero(s.curlevel.startx, s.curlevel.starty, ents, s)
+    s.hero.score=score
     local msize=parse_map(s.curlevel.startx, s.curlevel.starty,  s.hero, s, rubies, ents)
 
     -- camera and map positioning stuff
@@ -559,12 +560,18 @@ function game_state(level)
     function s:duel_ended(dmg_taken, dmg_given, enemy)
         self.hero:hurt(dmg_taken)
         enemy:hurt(dmg_given)
+        self.hero.score+= dmg_given * 25
+        
+        if(dmg_taken == 0)then
+            self.hero.score+=100
+            --todo bonus sfx
+        end
     end
 
     function s:next_lvl()
-        curstate=game_state(level+1)
+        self.hero.score+= seconds * 50
+        curstate=game_state(level+1, self.hero.score)
     end
-
 
     return s
 end

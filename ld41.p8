@@ -295,7 +295,7 @@ function menu_state()
 	add(texts, tutils({text="platformer hero",centerx=true,y=8,fg=8,bg=0,bordered=true,shadowed=true,sh=2}))
 	add(texts, tutils({text="rombosaur studios",centerx=true,y=99,fg=9,sh=2,shadowed=true}))
 	add(texts, tutils({text="ludum dare 41", centerx=true,y=19,fg=9,bg=0,bordered=true,shadowed=false,sh=2}))
-	add(texts, tutils({text="jump: ❎️   move: ⬅️➡️⬆️⬇️",x=12,y=70, fg=0,bg=1,shadowed=true, sh=7}))
+	add(texts, tutils({text="jump: ❎    move: ⬅️➡️⬆️⬇️",x=12,y=70, fg=0,bg=1,shadowed=true, sh=7}))
 	add(texts, tutils({text="press ❎ to start", blink=true, on_time=15, centerx=true,y=80,fg=0,bg=1,shadowed=true, sh=7}))
 	add(texts, tutils({text="v0.1", x=106, y=97}))
 	local ypos = 111
@@ -311,7 +311,7 @@ function menu_state()
 	local frbkg=1
 	local frfg=6
 	state.update=function()
-        if(btnp(5)) curstate=game_state(1) 
+        if(btnp(5)) curstate=game_state(1, 0) 
 	end
 	cls()
 	state.draw=function()
@@ -833,7 +833,7 @@ function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
     end
     return {width=col+2 -startx , height=row+2 -starty}
 end
-function game_state(level)
+function game_state(level, score)
     local s={}
     camx = 0
     camy = 0
@@ -862,7 +862,7 @@ function game_state(level)
             starty=1,
             mapx=0, 
             mapy=0, 
-            time=3 
+            time=20 
         },{
             id=2,
             startx=27,
@@ -887,6 +887,7 @@ function game_state(level)
         end
     end
     s.hero = spawn_hero(s.curlevel.startx, s.curlevel.starty, ents, s)
+    s.hero.score=score
     local msize=parse_map(s.curlevel.startx, s.curlevel.starty,  s.hero, s, rubies, ents)
     camx=s.hero.x-64
     camy=s.hero.y-64
@@ -971,9 +972,14 @@ function game_state(level)
     function s:duel_ended(dmg_taken, dmg_given, enemy)
         self.hero:hurt(dmg_taken)
         enemy:hurt(dmg_given)
+        self.hero.score+= dmg_given * 25
+        if(dmg_taken == 0)then
+            self.hero.score+=100
+        end
     end
     function s:next_lvl()
-        curstate=game_state(level+1)
+        self.hero.score+= seconds * 50
+        curstate=game_state(level+1, self.hero.score)
     end
     return s
 end

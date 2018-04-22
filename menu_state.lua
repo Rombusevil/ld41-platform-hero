@@ -7,7 +7,7 @@ function menu_state()
 	add(texts, tutils({text="rombosaur studios",centerx=true,y=99,fg=9,sh=2,shadowed=true}))
 	add(texts, tutils({text="ludum dare 41", centerx=true,y=19,fg=9,bg=0,bordered=true,shadowed=false,sh=2}))
 
-	add(texts, tutils({text="jump: ❎️   move: ⬅️➡️⬆️⬇️",x=12,y=70, fg=0,bg=1,shadowed=true, sh=7}))
+	add(texts, tutils({text="jump: ❎    move: ⬅️➡️⬆️⬇️",x=12,y=70, fg=0,bg=1,shadowed=true, sh=7}))
 	add(texts, tutils({text="press ❎ to start", blink=true, on_time=15, centerx=true,y=80,fg=0,bg=1,shadowed=true, sh=7}))
 	add(texts, tutils({text="v0.1", x=106, y=97}))
 
@@ -30,7 +30,7 @@ function menu_state()
 	local frfg=6
 		
 	state.update=function()
-        if(btnp(5)) curstate=game_state(1) -- "X"
+        if(btnp(5)) curstate=game_state(1, 0) -- "X"
 	end
 	
 	cls()
