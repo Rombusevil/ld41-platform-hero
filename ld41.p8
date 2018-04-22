@@ -844,7 +844,7 @@ function game_state(level)
         sh=1})
     local points_dimmed=tutils({text="00000", fg=5, bordered=false, x=107, y=2})
     local points=tutils({text="0", fg=7, bordered=false, x=123, y=2})
-    local seconds_txt=tutils({text="time ", fg=7, bordered=false, x=2, y=2})
+    local seconds_txt=tutils({text="time ", fg=12, bordered=false, x=2, y=2})
     local first_digit=points._x
     s.levels={
         {
@@ -853,27 +853,28 @@ function game_state(level)
             starty=1,
             mapx=0, 
             mapy=0, 
-            time=0 
+            time=20 
         },{
             id=2,
             startx=27,
             starty=1,
             mapx=26*8,  
             mapy=0,     
-            time=0 
+            time=20     
         },{
             id=3,
             startx=1,
             starty=10,
-            mapx=(1-1)*8, 
-            mapy=(10-1)*8, 
-            time=0 
+            mapx=(1-1)*8,   
+            mapy=(10-1)*8,  
+            time=60         
         }
     }
     s.curlevel = {}
     for l in all(s.levels) do
         if(level == l.id)then
             s.curlevel = l
+            seconds = s.curlevel.time
         end
     end
     s.hero = spawn_hero(s.curlevel.startx, s.curlevel.starty, ents)
@@ -908,6 +909,7 @@ function game_state(level)
         elseif (delta < 54) then
             camy -= camspeed
         end
+        seconds -=1/60 
     end
     s.draw=function()
         cls()
@@ -925,12 +927,7 @@ function game_state(level)
         rectfill(0,0,128,128,9)
         fillp()
         camera(camx, camy)
-        printh("mapx: "..s.curlevel.mapx.." width: "..msize.width)
-        rectfill(
-            s.curlevel.mapx                    , s.curlevel.mapy, 
-            s.curlevel.mapx+ (msize.width*8)   , s.curlevel.mapy+(msize.height*8),
-            0
-        )
+        rectfill(s.curlevel.mapx, s.curlevel.mapy, s.curlevel.mapx+ (msize.width*8), s.curlevel.mapy+(msize.height*8),0)
         map(s.curlevel.startx-1, s.curlevel.starty-1, s.curlevel.mapx, s.curlevel.mapy, msize.width, msize.height)
         for d in all(ents) do
             d:draw()
@@ -955,7 +952,7 @@ function game_state(level)
             end
         end
         points:draw()
-        seconds_txt.text = "time "..seconds
+        seconds_txt.text = "time "..flr(seconds)
         seconds_txt:draw()
         camera(camx, camy)
     end

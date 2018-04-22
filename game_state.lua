@@ -393,9 +393,9 @@ function game_state(level)
         sh=1})
     local points_dimmed=tutils({text="00000", fg=5, bordered=false, x=107, y=2})
     local points=tutils({text="0", fg=7, bordered=false, x=123, y=2})
-    local seconds_txt=tutils({text="time ", fg=7, bordered=false, x=2, y=2})
+    local seconds_txt=tutils({text="time ", fg=12, bordered=false, x=2, y=2})
     local first_digit=points._x
-    -- hud
+    -- end hud
 
     -- startx and starty are used by the map parser algorithm. It's 1x1px away from 0,0
     s.levels={
@@ -403,47 +403,46 @@ function game_state(level)
             id=1,
             startx=1, 
             starty=1,
-
-            mapx=0, -- startx-1*8,
-            mapy=0, -- starty-1*8,
-
-            time=0 -- todo: tiempo para terminar el level
+            mapx=0, -- (startx-1)*8,
+            mapy=0, -- (starty-1)*8,
+            time=20 -- time to finish the level
         },{
             id=2,
             startx=27,
             starty=1,
-
             mapx=26*8,  -- (startx-1)*8,
             mapy=0,     -- (starty-1)*8,
-
-            time=0 -- todo: tiempo para terminar el level
+            time=20     -- time to finish the level
         },{
             id=3,
             startx=1,
             starty=10,
-
-            mapx=(1-1)*8, -- startx-1*8,
-            mapy=(10-1)*8, -- starty-1*8,
-
-            time=0 -- todo: tiempo para terminar el level
+            mapx=(1-1)*8,   -- (startx-1)*8,
+            mapy=(10-1)*8,  -- (starty-1)*8,
+            time=60         -- time to finish the level
         }
     }
     
+    -- get level metadata
     s.curlevel = {}
     for l in all(s.levels) do
         if(level == l.id)then
             -- parse this level
             s.curlevel = l
+            seconds = s.curlevel.time
         end
     end
 
+    -- spawn hero and parse the map
     s.hero = spawn_hero(s.curlevel.startx, s.curlevel.starty, ents)
     local msize=parse_map(s.curlevel.startx, s.curlevel.starty,  s.hero, s, rubies, ents)
 
+    -- camera and map positioning stuff
     camx=s.hero.x-64
     camy=s.hero.y-64
     local mstartx = camx
     local mstarty = camy
+
 
     s.update=function()
         -- show the "level x" text
@@ -451,9 +450,8 @@ function game_state(level)
             intro_timeout+=1
             return
         end
-
-
-
+        -- ------------------
+        -- ------------------
         for u in all(ents) do
             u:update()
         end
@@ -479,6 +477,8 @@ function game_state(level)
         elseif (delta < 54) then
             camy -= camspeed
         end
+
+        seconds -=1/60 -- decrease 1 per second (asuming 60fps)
     end
 
     s.draw=function()
@@ -494,19 +494,19 @@ function game_state(level)
             return
         end
 
+        -- throw a baground for the "space" out of the map
         camera(0,0)
         fillp(0b0001001001001000)
         rectfill(0,0,128,128,9)
         fillp()
 
         camera(camx, camy)
-        rectfill(
-            s.curlevel.mapx                    , s.curlevel.mapy, 
-            s.curlevel.mapx+ (msize.width*8)   , s.curlevel.mapy+(msize.height*8),
-            0
-        )
-        
+        -- black map background
+        rectfill(s.curlevel.mapx, s.curlevel.mapy, s.curlevel.mapx+ (msize.width*8), s.curlevel.mapy+(msize.height*8),0)
+
+        -- render level
         map(s.curlevel.startx-1, s.curlevel.starty-1, s.curlevel.mapx, s.curlevel.mapy, msize.width, msize.height)
+
         for d in all(ents) do
             d:draw()
         end
@@ -536,7 +536,7 @@ function game_state(level)
         end
         points:draw()
 
-        seconds_txt.text = "time "..seconds
+        seconds_txt.text = "time "..flr(seconds)
         seconds_txt:draw()
 
         camera(camx, camy)
