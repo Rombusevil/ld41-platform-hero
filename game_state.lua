@@ -386,11 +386,11 @@ function game_state(level)
         {text="level  ",
         centerx=true,
         centery=true,
-        fg=8,
+        fg=9,
         bg=0,
         bordered=true,
         shadowed=true,
-        sh=2})
+        sh=1})
     local points_dimmed=tutils({text="00000", fg=5, bordered=false, x=107, y=2})
     local points=tutils({text="0", fg=7, bordered=false, x=123, y=2})
     local first_digit=points._x
@@ -485,9 +485,11 @@ function game_state(level)
 
         if(intro_timeout < 50)then
             camera(0,0)
-            rectfill(0,0,128,128,2)
+            fillp(0b0001001001001000)
+            rectfill(0,0,128,128,1)
             level_txt.text = "level "..level
             level_txt:draw()
+            fillp()
             return
         end
 
