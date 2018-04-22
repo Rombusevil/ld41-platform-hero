@@ -1,5 +1,5 @@
 -- state
-function win_state()
+function win_state(score)
     local s={}
     local texts={}
 
@@ -11,8 +11,8 @@ function win_state()
     sfx(-1)
     
     local ty=15
-    add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
-    add(texts, tutils({text="                         " ,centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2}))ty+=10
+    add(texts, tutils({text="congratulations!",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
+    add(texts, tutils({text="you won!" ,centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2}))ty+=10
     add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
     add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
     add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=20
@@ -25,6 +25,8 @@ function win_state()
 
     cls()
     s.draw=function()
+        camera(0,0)
+        
         -- bkg
         dance_bkg(10,frbkg)
         

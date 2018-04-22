@@ -1,3 +1,5 @@
+_enemies_loaded=0 -- no time to do anything, global var this bitch
+
 function hero(x,y, game_state)
     local anim_obj=anim()
     anim_obj:add(33,2,0.1,1,2)   -- idle
@@ -221,8 +223,11 @@ function exitdoor(x,y, hero, game_state)
 
     function e:update()
         if(collides(hero, self))then
-            -- TODO check conditions
-            game_state:next_lvl()
+            if( _enemies_loaded == 0 )then
+                game_state:next_lvl()
+            else
+                --todo: sfx de error
+            end
         end
     end
 
@@ -242,6 +247,7 @@ function enemy(x,y, hero, state, notes, cursor_speed, first_spr)
     e.notes = notes
     e.health = #notes -- If you hit all notes, the enemy dies
     e.speed = cursor_speed -- speed of notes when in ghero mode
+    e.dead_fuse = true
 
     local bounds_obj=bbox(8,8)
     e:set_bounds(bounds_obj)
@@ -258,6 +264,10 @@ function enemy(x,y, hero, state, notes, cursor_speed, first_spr)
         if(self.health <= 0)then
             -- dead
             e:set_anim(2)
+            if(self.dead_fuse)then
+                self.dead_fuse = false
+                _enemies_loaded-=1
+            end
             return
         end
 
@@ -351,6 +361,7 @@ function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
 
                     local ent = enemy(col*8,row*8, _hero, game_state, notes, e.cursor_speed, e.sprite)
                     add( ents_table, ent)
+                    _enemies_loaded+=1
                 end
             end
 
@@ -569,6 +580,12 @@ function game_state(level, score)
     end
 
     function s:next_lvl()
+        -- I'm finishing this up here 'cause I ran out of time :(
+        if(level+1 == 4)then
+            curstate=win_state(self.hero.score)
+            return
+        end
+
         self.hero.score+= seconds * 50
         curstate=game_state(level+1, self.hero.score)
     end

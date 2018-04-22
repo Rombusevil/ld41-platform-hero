@@ -551,6 +551,7 @@ function ghero_state(enemy, prev_state)
     end
     return s
 end
+_enemies_loaded=0 
 function hero(x,y, game_state)
     local anim_obj=anim()
     anim_obj:add(33,2,0.1,1,2)   
@@ -718,7 +719,11 @@ function exitdoor(x,y, hero, game_state)
     e:set_bounds(bounds_obj)
     function e:update()
         if(collides(hero, self))then
-            game_state:next_lvl()
+            printh(_enemies_loaded)
+            if( _enemies_loaded == 0 )then
+                game_state:next_lvl()
+            else
+            end
         end
     end
     return e
@@ -734,6 +739,7 @@ function enemy(x,y, hero, state, notes, cursor_speed, first_spr)
     e.notes = notes
     e.health = #notes 
     e.speed = cursor_speed 
+    e.dead_fuse = true
     local bounds_obj=bbox(8,8)
     e:set_bounds(bounds_obj)
     function e:hurt(dmg)
@@ -745,6 +751,10 @@ function enemy(x,y, hero, state, notes, cursor_speed, first_spr)
     function e:update()
         if(self.health <= 0)then
             e:set_anim(2)
+            if(self.dead_fuse)then
+                self.dead_fuse = false
+                _enemies_loaded-=1
+            end
             return
         end
         if(collides(hero, self))then
@@ -813,6 +823,7 @@ function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
                     end
                     local ent = enemy(col*8,row*8, _hero, game_state, notes, e.cursor_speed, e.sprite)
                     add( ents_table, ent)
+                    _enemies_loaded+=1
                 end
             end
             for c in all(collectibles_sprs) do
@@ -978,6 +989,10 @@ function game_state(level, score)
         end
     end
     function s:next_lvl()
+        if(level+1 == 4)then
+            curstate=win_state(self.hero.score)
+            return
+        end
         self.hero.score+= seconds * 50
         curstate=game_state(level+1, self.hero.score)
     end
@@ -1022,7 +1037,7 @@ function gameover_state()
     end
     return s
 end
-function win_state()
+function win_state(score)
     local s={}
     local texts={}
     local frbkg=11
@@ -1030,8 +1045,8 @@ function win_state()
     music(-1)
     sfx(-1)
     local ty=15
-    add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
-    add(texts, tutils({text="                         " ,centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2}))ty+=10
+    add(texts, tutils({text="congratulations!",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
+    add(texts, tutils({text="you won!" ,centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2}))ty+=10
     add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
     add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
     add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=20
@@ -1042,6 +1057,7 @@ function win_state()
     end
     cls()
     s.draw=function()
+        camera(0,0)
         dance_bkg(10,frbkg)
         local frame_x0=10	
         local frame_y0=10
