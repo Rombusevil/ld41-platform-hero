@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 16
+version 15
 __lua__
 -- made with super-fast-framework
 ------------------------- Start Imports
@@ -822,7 +822,7 @@ function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
         end
         row+=1 
     end
-    return {width=col+1, height=row+1}
+    return {width=col+2 -startx , height=row+2 -starty}
 end
 function game_state(level)
     local s={}
@@ -844,6 +844,7 @@ function game_state(level)
         sh=1})
     local points_dimmed=tutils({text="00000", fg=5, bordered=false, x=107, y=2})
     local points=tutils({text="0", fg=7, bordered=false, x=123, y=2})
+    local seconds_txt=tutils({text="time ", fg=7, bordered=false, x=2, y=2})
     local first_digit=points._x
     s.levels={
         {
@@ -919,7 +920,17 @@ function game_state(level)
             fillp()
             return
         end
+        camera(0,0)
+        fillp(0b0001001001001000)
+        rectfill(0,0,128,128,9)
+        fillp()
         camera(camx, camy)
+        printh("mapx: "..s.curlevel.mapx.." width: "..msize.width)
+        rectfill(
+            s.curlevel.mapx                    , s.curlevel.mapy, 
+            s.curlevel.mapx+ (msize.width*8)   , s.curlevel.mapy+(msize.height*8),
+            0
+        )
         map(s.curlevel.startx-1, s.curlevel.starty-1, s.curlevel.mapx, s.curlevel.mapy, msize.width, msize.height)
         for d in all(ents) do
             d:draw()
@@ -944,6 +955,8 @@ function game_state(level)
             end
         end
         points:draw()
+        seconds_txt.text = "time "..seconds
+        seconds_txt:draw()
         camera(camx, camy)
     end
     function s:duel_ended(dmg_taken, dmg_given, enemy)
