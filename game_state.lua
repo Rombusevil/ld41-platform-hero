@@ -198,9 +198,10 @@ function ruby(x,y,hero)
     return e
 end
 
-function enemy(x,y, hero, state, notes,         cursor_speed, ide_anim, dead_anim)
+-- all enemies must have only 2 spr in animation. they all share the death anim
+function enemy(x,y, hero, state, notes, cursor_speed, first_spr)
     local anim_obj=anim()
-    anim_obj:add(21,2,0.2,1,2) -- idle
+    anim_obj:add(first_spr,2,0.2,1,2) -- idle
     anim_obj:add(24,1,0.01,1,2) -- death
 
     local e=entity(anim_obj)
@@ -209,7 +210,7 @@ function enemy(x,y, hero, state, notes,         cursor_speed, ide_anim, dead_ani
     e.fuse = true
     e.notes = notes
     e.health = #notes -- If you hit all notes, the enemy dies
-    e.speed = 1 -- speed of notes when in ghero mode
+    e.speed = cursor_speed -- speed of notes when in ghero mode
 
     local bounds_obj=bbox(8,8)
     e:set_bounds(bounds_obj)
@@ -233,7 +234,6 @@ function enemy(x,y, hero, state, notes,         cursor_speed, ide_anim, dead_ani
             if(self.fuse)then
                 self.fuse = false
                 curstate=ghero_state( self, state)
-                --todo analizar como te fue y restarle una vida al enemy, matarlo o perder vida.
             end
         else
             self.fuse = true
@@ -256,6 +256,95 @@ function enemy(x,y, hero, state, notes,         cursor_speed, ide_anim, dead_ani
     return e
 end
 
+function spawn_hero(startx, starty, ents_table)
+    local hero_spawn = 39 -- spawn tile
+    local _hero = {}
+
+    -- while I still have rows to parse
+    local row=starty
+    while( not fget(mget(startx, row), 7) ) do
+        local col = startx
+
+        -- while I still have columns to parse
+        while ( not fget(mget(col, row), 7) ) do
+            local curtile = mget(col, row)
+
+            if(curtile == hero_spawn)then
+                printh("SPAWNING HERO")
+               _hero = hero(col*8,(row-1)*8)
+
+               add(ents_table, _hero)
+               return _hero
+            end
+
+            col += 1 -- go to next column
+        end
+
+        row+=1 -- go to next row
+    end
+end
+
+function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
+    local enemy_types = {
+        { sprite=21, cant_notes=6, cursor_speed=1 },
+        { sprite=53, cant_notes=4, cursor_speed=2.5 },
+        { sprite=55, cant_notes=7, cursor_speed=2 }
+    }
+    local collectibles_sprs = { 
+        {sprite=5}, -- ruby
+        {sprite=25} -- door
+    }
+
+    -- while I still have rows to parse
+    local row=starty
+    while( not fget(mget(startx, row), 7) ) do
+        local col = startx
+
+        -- while I still have columns to parse
+        while ( not fget(mget(col, row), 7) ) do
+            local curtile = mget(col, row)
+
+            -- parse enemies
+            for e in all(enemy_types) do
+                if(curtile == e.sprite)then
+                    -- delete tile
+                    mset(col, row, 0) -- blank sprite
+
+                    -- add object
+                    local notes = {}
+                    for i=1, e.cant_notes do
+                        notes[i] = flr(rnd(4))
+                        printh(notes[i])
+                    end
+
+                    local ent = enemy(col*8,row*8, _hero, game_state, notes, e.cursor_speed, e.sprite)
+                    add( ents_table, ent)
+                end
+            end
+
+            -- parse collectibles
+            for c in all(collectibles_sprs) do
+                if(curtile == c.sprite)then
+                    -- delete tile
+                    mset(col, row, 0) -- blank sprite
+
+                    -- add obj
+                    if(c.sprite == 5)then -- rubies
+                        local r = ruby(col*8, row*8, _hero)
+                        add(rubies_table, r)
+                        add(ents_table, r)
+                    elseif(c.sprite == 25)then -- exit door
+                        -- TODO
+                    end
+                end
+            end
+
+            col += 1 -- go to next column
+        end
+
+        row+=1 -- go to next row
+    end
+end
 
 function game_state()
     local s={}
@@ -271,21 +360,8 @@ function game_state()
     local first_digit=points._x
     -- hud
 
-    s.hero = hero(1*8,2*8)
-    local r = ruby(88, 7*8, s.hero)
-    local en1 = enemy(12*8, 6*8, s.hero, s, {3,1,0,2,1})
-    
-    add(rubies, r)
-    add(ents, r)
-    add(ents, s.hero)
-    add(ents, en1)
-
-    local e2 = enemy(21*8, 3*8, s.hero, s, {1,2,3})
-    e2.speed = 2
-    add(ents, e2)
-
-
-
+    s.hero = spawn_hero(1,1, ents)
+    parse_map(1, 1,  s.hero, s, rubies, ents)
 
     s.update=function()
         for u in all(ents) do
