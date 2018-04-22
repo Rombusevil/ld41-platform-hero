@@ -30,7 +30,7 @@ function menu_state()
 	local frfg=6
 		
 	state.update=function()
-        if(btnp(5)) curstate=game_state() -- "X"
+        if(btnp(5)) curstate=game_state(1) -- "X"
 	end
 	
 	cls()

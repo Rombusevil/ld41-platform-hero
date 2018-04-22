@@ -198,6 +198,28 @@ function ruby(x,y,hero)
     return e
 end
 
+function exitdoor(x,y, hero, game_state)
+    local anim_obj=anim()
+    anim_obj:add(25,1,0.01,1,2)
+
+    local e=entity(anim_obj)
+    e:setpos(x,y)
+    e:set_anim(1)
+
+    local bounds_obj=bbox(8,8)
+    e:set_bounds(bounds_obj)
+    -- e.debugbounds=true
+
+    function e:update()
+        if(collides(hero, self))then
+            -- TODO check conditions
+            game_state:next_lvl()
+        end
+    end
+
+    return e
+end
+
 -- all enemies must have only 2 spr in animation. they all share the death anim
 function enemy(x,y, hero, state, notes, cursor_speed, first_spr)
     local anim_obj=anim()
@@ -335,7 +357,7 @@ function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
                         add(rubies_table, r)
                         add(ents_table, r)
                     elseif(c.sprite == 25)then -- exit door
-                        -- TODO
+                        add(ents_table, exitdoor(col*8, row*8, _hero, game_state))
                     end
                 end
             end
@@ -346,7 +368,7 @@ function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
         row+=1 -- go to next row
     end
 
-    return {width=col, height=row+1}
+    return {width=col+1, height=row+1}
 end
 
 function game_state(level)
@@ -356,31 +378,81 @@ function game_state(level)
     local camspeed = 1.2
     local ents={}
     local rubies={}
+    local seconds=0
+    local intro_timeout=0
 
     -- hud shiet
+    local level_txt=tutils(
+        {text="level  ",
+        centerx=true,
+        centery=true,
+        fg=8,
+        bg=0,
+        bordered=true,
+        shadowed=true,
+        sh=2})
     local points_dimmed=tutils({text="00000", fg=5, bordered=false, x=107, y=2})
     local points=tutils({text="0", fg=7, bordered=false, x=123, y=2})
     local first_digit=points._x
     -- hud
 
-    local levels={
+    -- startx and starty are used by the map parser algorithm. It's 1x1px away from 0,0
+    s.levels={
         {
             id=1,
-        },
-        {
+            startx=1, 
+            starty=1,
+
+            mapx=0, -- startx-1*8,
+            mapy=0, -- starty-1*8,
+
+            time=0 -- todo: tiempo para terminar el level
+        },{
             id=2,
-        },
+            startx=27,
+            starty=1,
+
+            mapx=26*8,  -- (startx-1)*8,
+            mapy=0,     -- (starty-1)*8,
+
+            time=0 -- todo: tiempo para terminar el level
+        },{
+            id=3,
+            startx=1,
+            starty=10,
+
+            mapx=(1-1)*8, -- startx-1*8,
+            mapy=(10-1)*8, -- starty-1*8,
+
+            time=0 -- todo: tiempo para terminar el level
+        }
     }
-    for l in all(levels) do
+    
+    s.curlevel = {}
+    for l in all(s.levels) do
         if(level == l.id)then
             -- parse this level
+            s.curlevel = l
         end
     end
 
-    s.hero = spawn_hero(1,1, ents)
-    local msize=parse_map(1, 1,  s.hero, s, rubies, ents)
+    s.hero = spawn_hero(s.curlevel.startx, s.curlevel.starty, ents)
+    local msize=parse_map(s.curlevel.startx, s.curlevel.starty,  s.hero, s, rubies, ents)
+
+    camx=s.hero.x-64
+    camy=s.hero.y-64
+    local mstartx = camx
+    local mstarty = camy
 
     s.update=function()
+        -- show the "level x" text
+        if(intro_timeout < 50)then
+            intro_timeout+=1
+            return
+        end
+
+
+
         for u in all(ents) do
             u:update()
         end
@@ -410,8 +482,17 @@ function game_state(level)
 
     s.draw=function()
         cls()
+
+        if(intro_timeout < 50)then
+            camera(0,0)
+            rectfill(0,0,128,128,2)
+            level_txt.text = "level "..level
+            level_txt:draw()
+            return
+        end
+
         camera(camx, camy)
-        map(0,0,0,0, msize.width, msize.height)
+        map(s.curlevel.startx-1, s.curlevel.starty-1, s.curlevel.mapx, s.curlevel.mapy, msize.width, msize.height)
         for d in all(ents) do
             d:draw()
         end
@@ -448,6 +529,10 @@ function game_state(level)
     function s:duel_ended(dmg_taken, dmg_given, enemy)
         self.hero:hurt(dmg_taken)
         enemy:hurt(dmg_given)
+    end
+
+    function s:next_lvl()
+        curstate=game_state(level+1)
     end
 
 
