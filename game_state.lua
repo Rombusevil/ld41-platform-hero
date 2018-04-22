@@ -1,4 +1,4 @@
-function hero(x,y)
+function hero(x,y, game_state)
     local anim_obj=anim()
     anim_obj:add(33,2,0.1,1,2)   -- idle
     anim_obj:add(65,4,0.3,1,2)  -- walk
@@ -6,6 +6,8 @@ function hero(x,y)
 
     local e=entity(anim_obj)
    
+    e.spawnx=x
+    e.spawny=y
     e:setpos(x,y)
     e:set_anim(1) 
 
@@ -147,12 +149,19 @@ function hero(x,y)
         
         
         if(btnp(4))then -- "O"
-            
         end
         
         if(btnp(5) and grounded and not self.crawling)then -- "X"
             self.jump_tmr = 0
             self:sety(self.y-1) -- just enough to make the grounded flag false
+        end
+
+        if(self.health <= 0)then
+            self.health = 3
+            self:setpos(self.spawnx, self.spawny)
+            camx=self.spawnx-64
+            camy=self.spawny-64
+            curstate=message_state("you've got schooled, son!", game_state, 1)
         end
     end
 
@@ -278,7 +287,7 @@ function enemy(x,y, hero, state, notes, cursor_speed, first_spr)
     return e
 end
 
-function spawn_hero(startx, starty, ents_table)
+function spawn_hero(startx, starty, ents_table, game_state)
     local hero_spawn = 39 -- spawn tile
     local _hero = {}
 
@@ -292,7 +301,7 @@ function spawn_hero(startx, starty, ents_table)
             local curtile = mget(col, row)
 
             if(curtile == hero_spawn)then
-               _hero = hero(col*8,(row-1)*8)
+               _hero = hero(col*8,(row-1)*8, game_state)
 
                add(ents_table, _hero)
                return _hero
@@ -373,8 +382,8 @@ end
 
 function game_state(level)
     local s={}
-    local camx = 0
-    local camy = 0
+    camx = 0
+    camy = 0
     local camspeed = 1.2
     local ents={}
     local rubies={}
@@ -434,7 +443,7 @@ function game_state(level)
     end
 
     -- spawn hero and parse the map
-    s.hero = spawn_hero(s.curlevel.startx, s.curlevel.starty, ents)
+    s.hero = spawn_hero(s.curlevel.startx, s.curlevel.starty, ents, s)
     local msize=parse_map(s.curlevel.startx, s.curlevel.starty,  s.hero, s, rubies, ents)
 
     -- camera and map positioning stuff

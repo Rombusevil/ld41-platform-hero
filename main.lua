@@ -16,6 +16,7 @@ __lua__
 --<*game_state.lua
 --<*gameover_state.lua
 --<*win_state.lua
+--<*message_state.lua
 --------------------------- End Imports
 
 -- To enable MOUSE support uncomment ALL of the following commented lines:

@@ -551,12 +551,14 @@ function ghero_state(enemy, prev_state)
     end
     return s
 end
-function hero(x,y)
+function hero(x,y, game_state)
     local anim_obj=anim()
     anim_obj:add(33,2,0.1,1,2)   
     anim_obj:add(65,4,0.3,1,2)  
     anim_obj:add(97,2,0.3,2,1)  
     local e=entity(anim_obj)
+    e.spawnx=x
+    e.spawny=y
     e:setpos(x,y)
     e:set_anim(1) 
     local bounds_obj=bbox(8,16)
@@ -668,6 +670,13 @@ function hero(x,y)
             self.jump_tmr = 0
             self:sety(self.y-1) 
         end
+        if(self.health <= 0)then
+            self.health = 3
+            self:setpos(self.spawnx, self.spawny)
+            camx=self.spawnx-64
+            camy=self.spawny-64
+            curstate=message_state("you've got schooled, son!", game_state, 1)
+        end
     end
     e._draw = e.draw
     function e:draw()
@@ -759,7 +768,7 @@ function enemy(x,y, hero, state, notes, cursor_speed, first_spr)
     end
     return e
 end
-function spawn_hero(startx, starty, ents_table)
+function spawn_hero(startx, starty, ents_table, game_state)
     local hero_spawn = 39 
     local _hero = {}
     local row=starty
@@ -768,7 +777,7 @@ function spawn_hero(startx, starty, ents_table)
         while ( not fget(mget(col, row), 7) ) do
             local curtile = mget(col, row)
             if(curtile == hero_spawn)then
-               _hero = hero(col*8,(row-1)*8)
+               _hero = hero(col*8,(row-1)*8, game_state)
                add(ents_table, _hero)
                return _hero
             end
@@ -826,8 +835,8 @@ function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
 end
 function game_state(level)
     local s={}
-    local camx = 0
-    local camy = 0
+    camx = 0
+    camy = 0
     local camspeed = 1.2
     local ents={}
     local rubies={}
@@ -877,7 +886,7 @@ function game_state(level)
             seconds = s.curlevel.time
         end
     end
-    s.hero = spawn_hero(s.curlevel.startx, s.curlevel.starty, ents)
+    s.hero = spawn_hero(s.curlevel.startx, s.curlevel.starty, ents, s)
     local msize=parse_map(s.curlevel.startx, s.curlevel.starty,  s.hero, s, rubies, ents)
     camx=s.hero.x-64
     camy=s.hero.y-64
@@ -1037,6 +1046,35 @@ function win_state()
         for t in all(texts) do
             t:draw()
         end
+    end
+    return s
+end
+function message_state(msg_text, goto_state, duration_seconds)
+    local s={}
+    local time=0
+    local msg=tutils(
+        {text="",
+        centerx=true,
+        centery=true,
+        fg=9,
+        bg=0,
+        bordered=true,
+        shadowed=true,
+        sh=1})
+    s.update=function()
+        if(time > duration_seconds)then
+            curstate=goto_state
+        end
+        time+=1/60
+    end
+    s.draw=function()
+        cls()
+        camera(0,0)
+        fillp(0b0001001001001000)
+        rectfill(0,0,128,128,1)
+        msg.text = msg_text
+        msg:draw()
+        fillp()
     end
     return s
 end
