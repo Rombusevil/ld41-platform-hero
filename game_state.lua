@@ -208,7 +208,7 @@ function enemy(x,y, hero, state, notes,         cursor_speed, ide_anim, dead_ani
     e.fuse = true
     e.notes = notes
     e.health = #notes -- If you hit all notes, the enemy dies
-    e.speed = 1
+    e.speed = 1 -- speed of notes when in ghero mode
 
     local bounds_obj=bbox(8,8)
     e:set_bounds(bounds_obj)
