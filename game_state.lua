@@ -270,7 +270,6 @@ function spawn_hero(startx, starty, ents_table)
             local curtile = mget(col, row)
 
             if(curtile == hero_spawn)then
-                printh("SPAWNING HERO")
                _hero = hero(col*8,(row-1)*8)
 
                add(ents_table, _hero)
@@ -286,9 +285,11 @@ end
 
 function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
     local enemy_types = {
-        { sprite=21, cant_notes=6, cursor_speed=1 },
+        { sprite=21, cant_notes=6, cursor_speed=1.5 },
         { sprite=53, cant_notes=4, cursor_speed=2.5 },
-        { sprite=55, cant_notes=7, cursor_speed=2 }
+        { sprite=55, cant_notes=7, cursor_speed=2 },
+        { sprite=85, cant_notes=12, cursor_speed=2.1 },
+        { sprite=87, cant_notes=3, cursor_speed=3 }
     }
     local collectibles_sprs = { 
         {sprite=5}, -- ruby
@@ -297,8 +298,9 @@ function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
 
     -- while I still have rows to parse
     local row=starty
+    local col=startx
     while( not fget(mget(startx, row), 7) ) do
-        local col = startx
+        col = startx
 
         -- while I still have columns to parse
         while ( not fget(mget(col, row), 7) ) do
@@ -314,7 +316,6 @@ function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
                     local notes = {}
                     for i=1, e.cant_notes do
                         notes[i] = flr(rnd(4))
-                        printh(notes[i])
                     end
 
                     local ent = enemy(col*8,row*8, _hero, game_state, notes, e.cursor_speed, e.sprite)
@@ -344,9 +345,11 @@ function parse_map(startx, starty, _hero, game_state, rubies_table, ents_table)
 
         row+=1 -- go to next row
     end
+
+    return {width=col, height=row+1}
 end
 
-function game_state()
+function game_state(level)
     local s={}
     local camx = 0
     local camy = 0
@@ -360,8 +363,22 @@ function game_state()
     local first_digit=points._x
     -- hud
 
+    local levels={
+        {
+            id=1,
+        },
+        {
+            id=2,
+        },
+    }
+    for l in all(levels) do
+        if(level == l.id)then
+            -- parse this level
+        end
+    end
+
     s.hero = spawn_hero(1,1, ents)
-    parse_map(1, 1,  s.hero, s, rubies, ents)
+    local msize=parse_map(1, 1,  s.hero, s, rubies, ents)
 
     s.update=function()
         for u in all(ents) do
@@ -394,7 +411,7 @@ function game_state()
     s.draw=function()
         cls()
         camera(camx, camy)
-        map(0,0,0,0)
+        map(0,0,0,0, msize.width, msize.height)
         for d in all(ents) do
             d:draw()
         end
