@@ -487,6 +487,10 @@ function game_state(level)
             camy -= camspeed
         end
 
+        if(seconds <=0)then
+            curstate=gameover_state()
+        end
+
         seconds -=1/60 -- decrease 1 per second (asuming 60fps)
     end
 

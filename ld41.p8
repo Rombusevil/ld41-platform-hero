@@ -295,7 +295,7 @@ function menu_state()
 	add(texts, tutils({text="platformer hero",centerx=true,y=8,fg=8,bg=0,bordered=true,shadowed=true,sh=2}))
 	add(texts, tutils({text="rombosaur studios",centerx=true,y=99,fg=9,sh=2,shadowed=true}))
 	add(texts, tutils({text="ludum dare 41", centerx=true,y=19,fg=9,bg=0,bordered=true,shadowed=false,sh=2}))
-	add(texts, tutils({text="jump: 🅾️   move: ⬅️➡️⬆️⬇️",x=12,y=70, fg=0,bg=1,shadowed=true, sh=7}))
+	add(texts, tutils({text="jump: ❎️   move: ⬅️➡️⬆️⬇️",x=12,y=70, fg=0,bg=1,shadowed=true, sh=7}))
 	add(texts, tutils({text="press ❎ to start", blink=true, on_time=15, centerx=true,y=80,fg=0,bg=1,shadowed=true, sh=7}))
 	add(texts, tutils({text="v0.1", x=106, y=97}))
 	local ypos = 111
@@ -862,7 +862,7 @@ function game_state(level)
             starty=1,
             mapx=0, 
             mapy=0, 
-            time=20 
+            time=3 
         },{
             id=2,
             startx=27,
@@ -917,6 +917,9 @@ function game_state(level)
             camy += camspeed
         elseif (delta < 54) then
             camy -= camspeed
+        end
+        if(seconds <=0)then
+            curstate=gameover_state()
         end
         seconds -=1/60 
     end
@@ -983,17 +986,18 @@ function gameover_state()
     music(-1)
     sfx(-1)
     local ty=15
-    add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
+    add(texts, tutils({text="game over",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
     add(texts, tutils({text="                         " ,centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2}))ty+=10
+    add(texts, tutils({text="you've runned out of time!",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
     add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
-    add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
-    add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=20
+    add(texts, tutils({text="",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=20
     add(texts, tutils({text="                         ",centerx=true,y=ty,fg=8,bg=0,bordered=true,shadowed=true,sh=2})) ty+=10
     add(texts, tutils({text="press ❎ to restart", blink=true, on_time=15, centerx=true,y=110,fg=0,bg=1,bordered=false,shadowed=true,sh=7}))
     s.update=function()
-        if(btnp(5)) curstate=game_state() 
+        if(btnp(5)) curstate=menu_state() 
     end
     cls()
+    camera(0,0)
     s.draw=function()
         dance_bkg(10,frbkg)
         local frame_x0=10	
