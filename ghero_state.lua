@@ -52,11 +52,6 @@ function note(x,y, noteid, cursor, preview, lastone, callback_obj)
             self.active = true
         else
             self.active = false
-
-            -- notify done
-            if(self.was_active and lastone)then
-                callback_obj:done()
-            end
         end
     end
 
@@ -109,6 +104,11 @@ function note(x,y, noteid, cursor, preview, lastone, callback_obj)
         else
             self:_draw()
         end
+
+        if(not self.active and self.was_active and lastone)then
+            -- notify done
+            callback_obj:done()
+        end
     end
 
     function e:reset()
@@ -160,11 +160,7 @@ function staff(enemy, ents_vect, state)
     function s:draw() end
 
     function s:update() 
-        self.missed_cnt = 0
         for n in all(self.notes_vect) do
-            -- update missed notes count
-            if(n.status == -1) self.missed_cnt+=1 
-
             -- move notes
             n:setx(n.x - self.speed)
         end
@@ -181,7 +177,14 @@ function staff(enemy, ents_vect, state)
     -- this function is called by the cursor when it finishes running
     function s:done()
         if(not self.preview.do_prev)then
-            printh("finished "..self.missed_cnt)
+
+            -- get misses
+            self.missed_cnt = 0
+            for n in all(self.notes_vect) do
+                -- update missed notes count
+                if(n.status == -1) self.missed_cnt+=1 
+            end
+
             -- return to previous state with the result
             -- add result 
             curstate=state

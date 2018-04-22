@@ -36,45 +36,46 @@ function hero(x,y)
         local tile = mget( (self.x+width/2)/8, (self.y+height)/8)
         local grounded = fget(tile, 0)
         
-        if not grounded and not self.crawling then
+        if not grounded then
             -- apply gravity
             self.gravity_accel += 0.3
             self:sety(self.y+self.gravity_accel)
+            if not self.crawling then
+                -- retain jumping
+                if(self.jump_tmr <= self.jump_length) then
+                    self.jump_tmr += 1
+                    self:sety(self.y-self.jump_pwr)
+                end
 
-            -- retain jumping
-            if(self.jump_tmr <= self.jump_length) then
-                self.jump_tmr += 1
-                self:sety(self.y-self.jump_pwr)
-            end
+                -- ******************************************** --
+                -- avoid jump into a collidable tile vertically
+                -- ******************************************** --
+                local collides = fget( mget( (self.x+width/2)/8  , self.y/8),0 ) -- center
+                if(collides) then
+                    self.jump_tmr = self.jump_length +1 -- you collided vertically, stop going up
+                    self.gravity_accel -= 1    -- slow down gravity acceleration to accentuate the hit
+                    local curTileY = self.y     -- head y
+                    
+                    -- start going down until the first non collidable tile
+                    repeat
+                        curTileY = curTileY + 8
+                        collides = fget( mget( (self.x+width/2)/8  , curTileY/8),0 )     -- center
+                    until not collides 
 
-            -- ******************************************** --
-            -- avoid jump into a collidable tile vertically
-            -- ******************************************** --
-            local collides = fget( mget( (self.x+width/2)/8  , self.y/8),0 ) -- center
-            if(collides) then
-                self.jump_tmr = self.jump_length +1 -- you collided vertically, stop going up
-                self.gravity_accel -= 1    -- slow down gravity acceleration to accentuate the hit
-                local curTileY = self.y     -- head y
-                
-                -- start going down until the first non collidable tile
-                repeat
-                    curTileY = curTileY + 8
-                    collides = fget( mget( (self.x+width/2)/8  , curTileY/8),0 )     -- center
-                until not collides 
+                    self:sety( flr(curTileY/8) * 8 )
+                end
 
-                self:sety( flr(curTileY/8) * 8 )
-            end
-
-            -- ************************************************** --
-            -- avoid goind down into a collidable tile vertically
-            -- ************************************************** --
-            tile = mget( (self.x+width/2)/8, (self.y+height)/8)
-            grounded = fget(tile, 0)
-            if(grounded)then
-                self.gravity_accel = 1
-                if(self.y+height > flr( (self.y+height)/8)*8 )then
-                    self:sety( flr( (self.y+height)/8)*8 - height  )
-                end    
+                -- ************************************************** --
+                -- avoid goind down into a collidable tile vertically
+                -- ************************************************** --
+                tile = mget( (self.x+width/2)/8, (self.y+height)/8)
+                grounded = fget(tile, 0)
+                if(grounded)then
+                    self.gravity_accel = 1
+                    if(self.y+height > flr( (self.y+height)/8)*8 )then
+                        self:sety( flr( (self.y+height)/8)*8 - height  )
+                    end    
+                end
             end
         end
         
@@ -270,7 +271,7 @@ function game_state()
     local first_digit=points._x
     -- hud
 
-    s.hero = hero(20,48)
+    s.hero = hero(1*8,2*8)
     local r = ruby(88, 7*8, s.hero)
     local en1 = enemy(12*8, 6*8, s.hero, s, {3,1,0,2,1})
     
