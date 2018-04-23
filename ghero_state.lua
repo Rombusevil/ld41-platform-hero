@@ -206,6 +206,7 @@ function staff(enemy, ents_vect, state)
 end
 
 function ghero_state(enemy, prev_state)
+    music(-1)
     local s={}
     local ents={}
     local atention_txt=tutils(

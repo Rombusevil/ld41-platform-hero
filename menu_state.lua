@@ -2,8 +2,8 @@
 function menu_state()
     local state={}
     local texts={}
-    
-	add(texts, tutils({text="platformer hero",centerx=true,y=8,fg=8,bg=0,bordered=true,shadowed=true,sh=2}))
+	music(0)
+	add(texts, tutils({text="platform hero",centerx=true,y=8,fg=8,bg=0,bordered=true,shadowed=true,sh=2}))
 	add(texts, tutils({text="rombosaur studios",centerx=true,y=99,fg=9,sh=2,shadowed=true}))
 	add(texts, tutils({text="ludum dare 41", centerx=true,y=19,fg=9,bg=0,bordered=true,shadowed=false,sh=2}))
 

@@ -1,6 +1,9 @@
 -- state
 function message_state(msg_text, goto_state, duration_seconds)
     local s={}
+
+    sfx(8)
+    
     local time=0
     local msg=tutils(
         {text="",

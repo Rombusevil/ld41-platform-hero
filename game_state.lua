@@ -202,6 +202,7 @@ function ruby(x,y,hero)
         if(collides(self, hero) and self.alive)then
             self.alive=false
             hero.score+=self.points
+            sfx(7)
             -- todo: cool animation
         end
     end
@@ -400,20 +401,22 @@ function game_state(level, score)
     local rubies={}
     local seconds=0
     local intro_timeout=0
+    
+    music(0)
 
     -- hud shiet
     local level_txt=tutils(
         {text="level  ",
         centerx=true,
         centery=true,
-        fg=9,
+        fg=7,
         bg=0,
         bordered=true,
         shadowed=true,
         sh=1})
     local points_dimmed=tutils({text="00000", fg=5, bordered=false, x=107, y=2})
     local points=tutils({text="0", fg=7, bordered=false, x=123, y=2})
-    local seconds_txt=tutils({text="time ", fg=12, bordered=false, x=2, y=2})
+    local seconds_txt=tutils({text="time ", fg=7, bordered=false, x=2, y=2})
     local first_digit=points._x
     -- end hud
 
@@ -425,7 +428,7 @@ function game_state(level, score)
             starty=1,
             mapx=0, -- (startx-1)*8,
             mapy=0, -- (starty-1)*8,
-            time=20 -- time to finish the level
+            time=15 -- time to finish the level
         },{
             id=2,
             startx=27,
@@ -439,7 +442,7 @@ function game_state(level, score)
             starty=10,
             mapx=(1-1)*8,   -- (startx-1)*8,
             mapy=(10-1)*8,  -- (starty-1)*8,
-            time=60         -- time to finish the level
+            time=40         -- time to finish the level
         }
     }
     
@@ -506,6 +509,7 @@ function game_state(level, score)
         seconds -=1/60 -- decrease 1 per second (asuming 60fps)
     end
 
+    local level_flag=true
     s.draw=function()
         cls()
 
@@ -516,13 +520,18 @@ function game_state(level, score)
             level_txt.text = "level "..level
             level_txt:draw()
             fillp()
+            if(level_flag)then
+                level_flag=false
+                sfx(6)
+            end
+
             return
         end
 
         -- throw a baground for the "space" out of the map
         camera(0,0)
         fillp(0b0001001001001000)
-        rectfill(0,0,128,128,9)
+        rectfill(0,0,128,128,13)
         fillp()
 
         camera(camx, camy)
@@ -540,7 +549,7 @@ function game_state(level, score)
         -- hud
         -- *** --
         camera(0,0)
-        rectfill(0,0, 127,8, 6)
+        rectfill(0,0, 127,8, 0)
 
         points_dimmed:draw()
         points.text=s.hero.score
@@ -575,8 +584,11 @@ function game_state(level, score)
         
         if(dmg_taken == 0)then
             self.hero.score+=100
-            --todo bonus sfx
+            sfx(9) -- todo: make a cooler sfx here
+        else
+            sfx(9)
         end
+        music(0)
     end
 
     function s:next_lvl()
@@ -588,6 +600,7 @@ function game_state(level, score)
 
         self.hero.score+= seconds * 50
         curstate=game_state(level+1, self.hero.score)
+        sfx(10)
     end
 
     return s
