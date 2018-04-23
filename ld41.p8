@@ -293,7 +293,7 @@ function menu_state()
     local state={}
     local texts={}
 	music(0)
-	add(texts, tutils({text="platformer hero",centerx=true,y=8,fg=8,bg=0,bordered=true,shadowed=true,sh=2}))
+	add(texts, tutils({text="platform hero",centerx=true,y=8,fg=8,bg=0,bordered=true,shadowed=true,sh=2}))
 	add(texts, tutils({text="rombosaur studios",centerx=true,y=99,fg=9,sh=2,shadowed=true}))
 	add(texts, tutils({text="ludum dare 41", centerx=true,y=19,fg=9,bg=0,bordered=true,shadowed=false,sh=2}))
 	add(texts, tutils({text="jump: ❎    move: ⬅️➡️⬆️⬇️",x=12,y=70, fg=0,bg=1,shadowed=true, sh=7}))
@@ -305,6 +305,7 @@ function menu_state()
     add(texts, tutils({text="  z         x  ", centerx=true, bordered=true, y=ypos+3, fg=8, bg=0}))
     ypos+=10
 	add(texts, tutils({text="  remap  ", centerx=true, y=ypos, shadowed=true, fg=7, sh=0}))
+	reload(0x2000, 0x2000, 0x1000)
 	local x1=28 
 	local y1=128-19 
 	local x2=128-x1-2 
