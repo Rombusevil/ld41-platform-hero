@@ -18,8 +18,6 @@ function menu_state()
     ypos+=10
 	add(texts, tutils({text="  remap  ", centerx=true, y=ypos, shadowed=true, fg=7, sh=0}))
 	
-	reload(0x2000, 0x2000, 0x1000)
-
 	-- controls position
 	local x1=28 
 	local y1=128-19 

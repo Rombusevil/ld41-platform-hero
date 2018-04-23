@@ -305,7 +305,6 @@ function menu_state()
     add(texts, tutils({text="  z         x  ", centerx=true, bordered=true, y=ypos+3, fg=8, bg=0}))
     ypos+=10
 	add(texts, tutils({text="  remap  ", centerx=true, y=ypos, shadowed=true, fg=7, sh=0}))
-	reload(0x2000, 0x2000, 0x1000)
 	local x1=28 
 	local y1=128-19 
 	local x2=128-x1-2 
@@ -856,6 +855,8 @@ function game_state(level, score)
     local rubies={}
     local seconds=0
     local intro_timeout=0
+    reload(0x2000, 0x2000, 0x1000)
+    _enemies_loaded=0
     music(0)
     local level_txt=tutils(
         {text="level  ",

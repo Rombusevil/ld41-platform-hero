@@ -401,7 +401,8 @@ function game_state(level, score)
     local rubies={}
     local seconds=0
     local intro_timeout=0
-    
+    reload(0x2000, 0x2000, 0x1000)
+    _enemies_loaded=0
     music(0)
 
     -- hud shiet
